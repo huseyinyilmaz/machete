@@ -8,9 +8,11 @@
 
 -spec init(list()) -> {ok, term()}.
 init([]) ->
+    %% {{trace, "/tmp"}, undefined}.
     {ok, undefined}.
 
 -spec to_html(wrq:reqdata(), term()) -> {iodata(), wrq:reqdata(), term()}.
 to_html(ReqData, State) ->
-    {"<html><body>Hello, new world</body></html>", ReqData, State}.
+    Data = wrq:path_info(code, ReqData),
+    {Data, ReqData, State}.
 
