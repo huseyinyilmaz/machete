@@ -24,7 +24,8 @@
 
 init(ConfigProps) ->
     {root, Root} = proplists:lookup(root, ConfigProps),
-    {ok, #context{root=Root}}.
+    %% {ok, #context{root=Root}}.
+    {{trace, "/tmp"}, #context{root=Root}}.
 
 allowed_methods(ReqData, Context) ->
     {['HEAD', 'GET'], ReqData, Context}.
@@ -49,6 +50,7 @@ file_exists(Context, Name) ->
 
 resource_exists(ReqData, Context) ->
     Path = wrq:disp_path(ReqData),
+    lager:debug("path=~p", [Path]),
     case file_exists(Context, Path) of
         {true, _} ->
             {true, ReqData, Context};
