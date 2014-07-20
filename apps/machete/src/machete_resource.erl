@@ -8,8 +8,10 @@
 
 -spec init(list()) -> {ok, term()}.
 init([]) ->
-    %% {{trace, "/tmp"}, undefined}.
-    {ok, undefined}.
+    error_logger:info_msg("XXXXXXXXXXXXXXXXXXXXXXXX"),
+    error_logger:error_msg("AAAAAAAAAAAAAAAAAAAAAAAA"),
+    {{trace, "/tmp"}, undefined}.
+    %% {ok, undefined}.
 
 -spec to_html(wrq:reqdata(), term()) -> {iodata(), wrq:reqdata(), term()}.
 to_html(ReqData, State) ->
