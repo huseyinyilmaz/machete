@@ -9,7 +9,8 @@
 -module(machete_mnesia).
 
 %% API
--export([create/0]).
+-export([create/0,
+         init/0]).
 
 -include("machete.hrl").
 
@@ -22,6 +23,13 @@
 %% Creates mnesia tables
 %% @end
 %%--------------------------------------------------------------------
+
+init() ->
+    mnesia:start(),
+    ensure_mnesia_running(),
+    check_mnesia_tables(),
+    ensure_mnesia_dir().
+
 create() ->
     lists:foreach(fun ({Tab, TabDef}) ->
                           TabDef1 = proplists:delete(match, TabDef),
@@ -54,8 +62,44 @@ ensure_mnesia_running() ->
 %%% Internal functions
 %%%===================================================================
 
+check_mnesia_tables()->
+    Tables = table_list(),
+    lager:info('table_list=~p', [Tables]).
+
+ensure_mnesia_not_running() ->
+    case mnesia:system_info(is_running) of
+        no ->
+            ok;
+        stopping ->
+            wait_for(mnesia_not_running),
+            ensure_mnesia_not_running();
+        Reason when Reason =:= yes; Reason =:= starting ->
+            throw({error, mnesia_unexpectedly_running})
+    end.
+
+ensure_mnesia_dir() ->
+    MnesiaDir = dir() ++ "/",
+    case filelib:ensure_dir(MnesiaDir) of
+        {error, Reason} ->
+            throw({error, {cannot_create_mnesia_dir, MnesiaDir, Reason}});
+        ok ->
+            ok
+    end.
+
+dir() -> mnesia:system_info(directory).
+
+
+absent_tables()->
+    Table_list = table_list,
+    lists:foldl(fun({table_name, table_def}, Sum)->ok end,
+                [],
+                definitions)
+
+table_list()->
+    lists:sort(lists:delete(schema, mnesia:system_info(tables))).
+
 wait_for(Condition) ->
-    error_logger:info_msg("Waiting for ~p...~n", [Condition]),
+    lager:info("Waiting for ~p...", [Condition]),
     timer:sleep(1000).
 
 definitions()->

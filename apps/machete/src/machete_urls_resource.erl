@@ -1,6 +1,5 @@
 -module(machete_urls_resource).
 -export([init/1,
-         to_html/2,
          allowed_methods/2,
          process_post/2,
          post_is_create/2
