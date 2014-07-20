@@ -24,3 +24,4 @@ erl_crash.dump
 .eunit
 publicator_test
 /rel/machete
+/www/bower_components

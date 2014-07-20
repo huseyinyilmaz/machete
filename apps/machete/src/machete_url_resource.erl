@@ -1,4 +1,4 @@
--module(machete_resource).
+-module(machete_url_resource).
 -export([
     init/1,
     to_html/2

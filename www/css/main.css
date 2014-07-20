@@ -1,8 +1,8 @@
 body {
-    padding-top: 50px;
+    padding-top: 250px;
     background: url(/assets/images/machete01.jpg) no-repeat top center
 }
-.starter-template {
+.container {
   padding: 40px 15px;
   text-align: center;
 }
