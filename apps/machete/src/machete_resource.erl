@@ -8,8 +8,8 @@
 
 -spec init(list()) -> {ok, term()}.
 init([]) ->
-    error_logger:info_msg("XXXXXXXXXXXXXXXXXXXXXXXX"),
-    error_logger:error_msg("AAAAAAAAAAAAAAAAAAAAAAAA"),
+    lager:debug("XXXXXXXXXXXXXXXXXXXXXXXX"),
+
     {{trace, "/tmp"}, undefined}.
     %% {ok, undefined}.
 

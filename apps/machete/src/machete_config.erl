@@ -8,7 +8,8 @@
 -spec dispatch() -> [webmachine_dispatcher:route()].
 dispatch() ->
     lists:flatten([
-        {["url", code], machete_resource, []}
+        {["url", code], machete_resource, []},
+        {["assets", '*'], machete_static_resource, [{root, "www"}]}
     ]).
 
 web_config() ->
