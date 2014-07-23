@@ -30,10 +30,25 @@ init() ->
     ok = ensure_mnesia_dir(),
     ok = mnesia:start(),
     ok = ensure_mnesia_running(),
-    ok = ensure_schema().
+    ok = ensure_schema(),
+    lager:debug("Waiting for tables to initialize"),
+    ok = mnesia:wait_for_tables(names(), 30000),
+    lager:debug("Table initialization complete").
 
+-spec insert_url(binary()) -> binary().
 insert_url(Url) ->
-    done.
+    Code = get_url_code(),
+    mnesia:dirty_write(#url{code=Code, url=Url}),
+    Code.
+    %% mnesia:transaction(fun()-> mnesia:write(#url{code=get_url_code(), url=Url}) end).
+
+get_url(Code)->
+    case mnesia:dirty_read(url, Code) of
+        [#url{url=Url}] -> Url;
+        [] -> not_found
+    end.
+
+
 
 
 
@@ -43,8 +58,7 @@ insert_url(Url) ->
 
 start()->
     lager:debug("starting mnesia."),
-    ok = mnesia:start(),
-    ok = mnesia:wait_for_tables(names(), 30000).
+    ok = mnesia:start().
 
 
 stop()->
@@ -69,8 +83,8 @@ create_schema() ->
     stop(),
     ensure_mnesia_not_running(),
     lager:debug("creating mnesia schema"),
-    mnesia:delete_schema([node()]),
-    {atomic, ok} = mnesia:create_schema([node()]),
+    _ = mnesia:delete_schema([node()]),
+    ok = mnesia:create_schema([node()]),
     lager:debug("starting mnesia"),
     start(),
     ensure_mnesia_running().
@@ -155,19 +169,16 @@ definitions()->
        {disc_copies, [node()]}]}
     ].
 
-Counter
+%%%%%%%%%%%%%%%%%%%%%%%
+%% Counter functions %%
+%%%%%%%%%%%%%%%%%%%%%%%
+get_url_code() ->
+    list_to_binary(
+      string:to_lower(
+        integer_to_list(bump(url), 36))).
+
 bump(Type) ->
     bump(Type, 1).
 
 bump(Type, Inc) ->
-    mnesia:dirty_update_counter(machete_counter, Type, Inc).
-
-reset(Type) ->
-  reset(Type, 0).
-
-reset(Type, Count) ->
-    Counter = #counter {
-      type = Type,
-      value = Count
-     },
-    ok = mnesia:dirty_write(Counter).
+    mnesia:dirty_update_counter(counter, Type, Inc).
