@@ -7,6 +7,7 @@
 ]).
 
 start(_Type, _StartArgs) ->
+    machete_mnesia:init(),
     machete_sup:start_link().
 
 stop(_State) ->

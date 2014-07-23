@@ -9,8 +9,10 @@
 -module(machete_mnesia).
 
 %% API
--export([create/0,
-         init/0]).
+-export([init/0,
+         insert_url/1]).
+
+-compile(export_all).
 
 -include("machete.hrl").
 
@@ -20,33 +22,72 @@
 
 %%--------------------------------------------------------------------
 %% @doc
-%% Creates mnesia tables
+%% Starts mnesia.
 %% @end
 %%--------------------------------------------------------------------
 
 init() ->
-    mnesia:start(),
-    ensure_mnesia_running(),
-    check_mnesia_tables(),
-    ensure_mnesia_dir().
+    ok = ensure_mnesia_dir(),
+    ok = mnesia:start(),
+    ok = ensure_mnesia_running(),
+    ok = ensure_schema().
 
-create() ->
+insert_url(Url) ->
+    done.
+
+
+
+%%%===================================================================
+%%% Internal functions
+%%%===================================================================
+
+start()->
+    lager:debug("starting mnesia."),
+    ok = mnesia:start(),
+    ok = mnesia:wait_for_tables(names(), 30000).
+
+
+stop()->
+    lager:debug("stop mnesia."),
+    mnesia:stop().
+
+ensure_schema() ->
+    case absent_tables() of
+        [] ->
+            lager:debug('schema integrity is ensured'),
+            ok;
+        _ ->
+            lager:warning("Schema is not complete. Creating new schema"),
+            create_schema(),
+            create_mnesia_tables(absent_tables()),
+            lager:info("Schema creation. complete."),
+            lager:debug("rechecking integrity"),
+            ensure_schema()
+    end.
+
+create_schema() ->
+    stop(),
+    ensure_mnesia_not_running(),
+    lager:debug("creating mnesia schema"),
+    mnesia:delete_schema([node()]),
+    {atomic, ok} = mnesia:create_schema([node()]),
+    lager:debug("starting mnesia"),
+    start(),
+    ensure_mnesia_running().
+
+
+create_mnesia_tables(Tables) ->
     lists:foreach(fun ({Tab, TabDef}) ->
-                          TabDef1 = proplists:delete(match, TabDef),
-                          case mnesia:create_table(Tab, TabDef1) of
+                          case mnesia:create_table(Tab, TabDef) of
                               {atomic, ok} -> ok;
                               {aborted, Reason} ->
                                   throw({error, {table_creation_failed,
-                                                 Tab, TabDef1, Reason}})
+                                                 Tab, TabDef, Reason}})
                           end
-                  end, definitions()),
+                  end, Tables),
     ok.
 
-%%--------------------------------------------------------------------
-%% @doc
-%% Ensures that mnesia is running
-%% @end
-%%--------------------------------------------------------------------
+
 ensure_mnesia_running() ->
     case mnesia:system_info(is_running) of
         yes ->
@@ -57,14 +98,6 @@ ensure_mnesia_running() ->
         Reason when Reason =:= no; Reason =:= stopping ->
             throw({error, mnesia_not_running})
     end.
-
-%%%===================================================================
-%%% Internal functions
-%%%===================================================================
-
-check_mnesia_tables()->
-    Tables = table_list(),
-    lager:info('table_list=~p', [Tables]).
 
 ensure_mnesia_not_running() ->
     case mnesia:system_info(is_running) of
@@ -88,22 +121,31 @@ ensure_mnesia_dir() ->
 
 dir() -> mnesia:system_info(directory).
 
-
-absent_tables()->
-    Table_list = table_list,
-    lists:foldl(fun({table_name, table_def}, Sum)->ok end,
-                [],
-                definitions)
-
 table_list()->
     lists:sort(lists:delete(schema, mnesia:system_info(tables))).
+
+absent_tables()->
+    Table_list = table_list(),
+    lists:foldl(fun({Table_name, _}=Item, Sum)->
+                        case lists:member(Table_name, Table_list) of
+                            true ->
+                                Sum;
+                            false ->
+                                [Item | Sum]
+                        end
+                end,
+                [],
+                definitions()).
+
 
 wait_for(Condition) ->
     lager:info("Waiting for ~p...", [Condition]),
     timer:sleep(1000).
 
+names() -> [Tab || {Tab, _} <- definitions()].
+
 definitions()->
     [{machete_url,
       [{record_name, url},
        {attributes, record_info(fields, url)},
-       {disc_copies, [node()]}]}].
+       {disc_only_copies, [node()]}]}].
