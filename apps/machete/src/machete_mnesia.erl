@@ -145,7 +145,29 @@ wait_for(Condition) ->
 names() -> [Tab || {Tab, _} <- definitions()].
 
 definitions()->
-    [{machete_url,
+    [{url,
       [{record_name, url},
        {attributes, record_info(fields, url)},
-       {disc_only_copies, [node()]}]}].
+       {disc_only_copies, [node()]}]},
+     {counter,
+      [{record_name, counter},
+       {attributes, record_info(fields, counter)},
+       {disc_copies, [node()]}]}
+    ].
+
+Counter
+bump(Type) ->
+    bump(Type, 1).
+
+bump(Type, Inc) ->
+    mnesia:dirty_update_counter(machete_counter, Type, Inc).
+
+reset(Type) ->
+  reset(Type, 0).
+
+reset(Type, Count) ->
+    Counter = #counter {
+      type = Type,
+      value = Count
+     },
+    ok = mnesia:dirty_write(Counter).
