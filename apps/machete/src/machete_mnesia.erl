@@ -14,7 +14,11 @@
 
 -compile(export_all).
 
--include("machete.hrl").
+-record(url, {code::binary(),
+              url::binary()}).
+
+-record(counter, {name::term(),
+                  value::integer()}).
 
 %%%===================================================================
 %%% API
@@ -35,13 +39,15 @@ init() ->
     ok = mnesia:wait_for_tables(names(), 30000),
     lager:debug("Table initialization complete").
 
--spec insert_url(binary()) -> binary().
+-spec insert_url(binary() | list()) -> binary().
+insert_url(Url) when is_list(Url) -> insert_url(list_to_binary(Url));
 insert_url(Url) ->
     Code = get_url_code(),
     mnesia:dirty_write(#url{code=Code, url=Url}),
     Code.
     %% mnesia:transaction(fun()-> mnesia:write(#url{code=get_url_code(), url=Url}) end).
 
+get_url(Code) when is_list(Code) -> get_url(list_to_binary(Code));
 get_url(Code)->
     case mnesia:dirty_read(url, Code) of
         [#url{url=Url}] -> Url;
@@ -173,9 +179,7 @@ definitions()->
 %% Counter functions %%
 %%%%%%%%%%%%%%%%%%%%%%%
 get_url_code() ->
-    list_to_binary(
-      string:to_lower(
-        integer_to_list(bump(url), 36))).
+    list_to_binary(string:to_lower(integer_to_list(bump(url), 36))).
 
 bump(Type) ->
     bump(Type, 1).

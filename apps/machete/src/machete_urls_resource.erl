@@ -23,7 +23,9 @@ post_is_create(Request, Ctx) ->
 
 
 process_post(ReqData, Ctx) ->
-    Body = mochijson2:encode([{<<"uri">>, <<"/u/1234">>}]),
-    lager:debug("Response Body = ~p", [Body]),
-    ReqData2 = wrq:set_resp_body(Body, ReqData),
+    Url = wrq:req_body(ReqData),
+    Code = machete_mnesia:insert_url(Url),
+    Response = mochijson2:encode([{<<"uri">>, << <<"/u/">>/binary, Code/binary>>}]),
+    lager:debug("Response Data = ~p", [Response]),
+    ReqData2 = wrq:set_resp_body(Response, ReqData),
     {true, ReqData2, Ctx}.
