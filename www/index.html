@@ -21,17 +21,37 @@
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
+
+<!--------------->
+<!-- templates -->
+<!--------------->
+<script type="text/mustache" id="result_template">
+    <div class="panel panel-danger">
+      <div class="panel-heading">
+        <h3 class="panel-title">Machete Kills!</h3>
+      </div>
+      <div class="panel-body">
+        {{url}}
+      </div>
+    </div>
+</script>
   </head>
 
   <body>
-
-    <div class="container">
-
-      <div class="jumbotron">
-        <h3>Machete url shortener</h3>
-        <p>machete shortens!!</p>
+    <div class="footer">
+      <div class="container">
         <div class="row">
-        <div class="col-12">
+          <div class="col-lg-6 col-lg-offset-1">
+            <h3>Machete url shortener</h3>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-6 col-lg-offset-1">
+            <h4>machete shortens!!</h4>
+          </div>
+        </div>
+        <div class="row">
+        <div class="col-sm-12 col-lg-10 col-lg-offset-1"xo>
           <div class="input-group">
             <input type="text" class="form-control" id="url_input">
             <span class="input-group-btn">
@@ -39,11 +59,13 @@
             </span>
           </div><!-- /input-group -->
         </div><!-- /.col-12 -->
-        </div>
-      </div>
+        </div><!-- /.row -->
+        <div class="row">
+          <div class="col-lg-8 col-sm-10 col-lg-offset-1 col-sm-offset-1" id="result_div"></div><!-- /.col-12 -->
+        </div><!-- /.row -->
 
     </div><!-- /.container -->
-
+    </div><!-- /.footer -->
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
@@ -51,6 +73,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <script src="/assets/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="/assets/bower_components/json2/json2.js"></script>
+    <script src="/assets/bower_components/mustache/mustache.js"></script>
     <script src="/assets/scripts/machete.js"></script>
   </body>
 </html>
