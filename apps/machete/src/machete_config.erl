@@ -20,6 +20,6 @@ web_config() ->
     [
         {ip, Ip},
         {port, Port},
-        {log_dir, "priv/log"},
+        {log_dir, "log"},
         {dispatch, dispatch()}
     ].

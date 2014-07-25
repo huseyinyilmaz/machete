@@ -74,7 +74,7 @@ stop()->
 ensure_schema() ->
     case absent_tables() of
         [] ->
-            lager:debug('schema integrity is ensured'),
+            lager:debug("schema integrity is ensured"),
             ok;
         _ ->
             lager:warning("Schema is not complete. Creating new schema"),

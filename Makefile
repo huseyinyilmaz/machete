@@ -34,3 +34,9 @@ start: compile
 	    -s reloader \
 	    -s machete \
 
+release: clean deps compile
+	@$(REBAR) generate
+	cd rel; tar -czvf machete.tar.gz machete
+	rm -rf rel/machete
+	mv rel/machete.tar.gz .
+	echo "machete.tar.gz is created in current directory."
