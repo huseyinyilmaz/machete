@@ -29,6 +29,7 @@ Then get front end dependencies with bower
 Now you can build the release
 
 ::
+
    $ make release
 
 This command will create machete.tar.gz file on root server.
@@ -36,6 +37,7 @@ This command will create machete.tar.gz file on root server.
 If you want to start server without building the release.
 
 ::
+
     $ make start
 
 After starting the server goto http://localhost:8767/assets/index.html
