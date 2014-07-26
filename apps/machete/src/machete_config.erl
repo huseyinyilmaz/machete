@@ -10,7 +10,7 @@ dispatch() ->
     lists:flatten([
         {["u"], machete_urls_resource, []},
         {["u", code], machete_url_resource, []},
-        {["assets", '*'], machete_static_resource, [{root, "www"}]}
+        {["assets", '*'], machete_static_resource, [{root, "assets"}]}
     ]).
 
 web_config() ->
