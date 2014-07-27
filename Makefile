@@ -40,6 +40,3 @@ release: clean deps compile
 	rm -rf rel/machete
 	mv rel/machete.tar.gz .
 	echo "machete.tar.gz is created in current directory."
-
-rel: compile
-	@$(REBAR) generate
