@@ -138,6 +138,19 @@ get_pid() {
 
 # Check the first argument for instructions
 case "$1" in
+    backup)
+        $NODETOOL rpc machete_console backup $2
+        ;;
+    restore)
+        $NODETOOL rpc machete_console restore $2
+        ;;
+    backup_to_txt)
+        $NODETOOL rpc machete_console backup_to_txt $2
+        ;;
+    restore_from_txt)
+        $NODETOOL rpc machete_console restore_from_txt $2
+        ;;
+
     start|start_boot)
         # Make sure there is not already a node running
         RES=`ping_node`
@@ -339,7 +352,7 @@ case "$1" in
         echo $PID
         ;;
     *)
-        echo "Usage: $SCRIPT {start|start_boot <file>|foreground|stop|restart|reboot|ping|console|getpid|console_clean|console_boot <file>|attach|remote_console|upgrade}"
+        echo "Usage: $SCRIPT {start|start_boot <file>|foreground|stop|restart|reboot|ping|console|getpid|console_clean|console_boot <file>|attach|remote_console|upgrade|backup|restore|backup_to_txt|restore_to_txt}"
         exit 1
         ;;
 esac
