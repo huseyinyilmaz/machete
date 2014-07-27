@@ -18,7 +18,6 @@ First of all, get the source code:
 
    $ git clone git://github.com/huseyinyilmaz/machete.git
 
-
 Then get front end dependencies with bower
 
 ::
@@ -26,32 +25,36 @@ Then get front end dependencies with bower
    $ cd assets
    $ bower install # first install bower if you don't have it.
 
-Now you can build the release
-
-::
-
-   $ make release
-
-This command will create machete.tar.gz file on root server.
-
 If you want to start server without building the release.
 
 ::
-
+    $ make deps
     $ make start
 
 After starting the server goto http://localhost:8767/assets/index.html
 
 
+You can build the release with this command
+
+::
+
+   $ make release
+
+This command will create machete.tar.gz file on project root.
+
+
 Deploying release
 =================
-Machete release is a self contain server. just untar machete.tar.gz to somwhere and call
+
+Machete release is a self contained http server. Just untar machete.tar.gz to somewhere and call following command the start server.
 
 ::
 
     $ bin/machete start
 
-to run the server. Here are some other console commands that are provided.
+This will run the server on default port 8767. Log files will be under [project_root]/log directory. Database will be stored under [project_root]/mnesia directory. Application config file is [project_root]/releases/[release_number]/sys.conf
+
+Here are some other console commands that are provided.
 
 ::
 
