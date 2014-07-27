@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from time import sleep
 
 from fabric.api import task
 from fabric.api import run
@@ -50,6 +50,8 @@ def start():
             gp('Starting machete')
             with settings(warn_only=True):
                 run('bin/machete start')
+            sleep(5)
+            gp('Waiting 5 seconds for machete to start')
             gok()
 
 
@@ -92,6 +94,8 @@ def replace_source():
         with prefix(ENV_PREFIX):
             rp('Stoping machete server')
             run('machete/bin/machete stop')
+            rp('Waiting 10 seconds for machete to stop')
+            sleep(10)
             rok()
             rp('removing old source code')
             run('rm -rf machete_old')
@@ -102,6 +106,8 @@ def replace_source():
             rok()
             rp('Starting new server')
             run('machete/bin/machete start')
+            rp('Waiting 10 seconds for machete to start')
+            sleep(10)
             rok()
 
 
