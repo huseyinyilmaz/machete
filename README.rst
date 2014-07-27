@@ -1,6 +1,6 @@
 machete
 =======
-A simple Url shortener implementation.
+A url shortener.
 
 Build Dependencies
 ==================
@@ -41,3 +41,22 @@ If you want to start server without building the release.
     $ make start
 
 After starting the server goto http://localhost:8767/assets/index.html
+
+
+Deploying release
+=================
+Machete release is a self contain server. just untar machete.tar.gz to somwhere and call
+
+::
+
+    $ bin/machete start
+
+to run the server. Here are some other console commands that are provided.
+
+::
+
+   $ bin/machete stop # to stop server
+   $ bin/machete backup file_name.dub # to backup to file_name.dub file
+   $ bin/machete restore file_name.dub # to restore from file_name.dub file
+   $ bin/machete backup_to_txt file_name.txt # backup in human readable format (educational purposes)
+   $ bin/machete restore_from_txt file_name.txt # restore from human readable format
