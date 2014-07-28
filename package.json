@@ -1,0 +1,24 @@
+{
+  "name": "machete",
+  "description": "A url shortener.",
+  "scripts": {
+    "watch": "watchify assets/scripts/machete.js -o assets/scripts/bundle.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/huseyinyilmaz/machete.git"
+  },
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/huseyinyilmaz/machete/issues"
+  },
+  "homepage": "https://github.com/huseyinyilmaz/machete",
+  "devDependencies": {
+    "browserify": "^5.9.1",
+    "watchify": "^1.0.1"
+  },
+  "dependencies": {
+    "jquery": "^2.1.1",
+    "mustache": "^0.8.2"
+  }
+}
