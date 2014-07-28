@@ -1,6 +1,7 @@
 *~
 \#*\#
 \.\#*
+.*.sw[pon]
 *.pyc
 logs/
 log/
@@ -24,4 +25,5 @@ erl_crash.dump
 .eunit
 publicator_test
 /rel/machete
-/assets/bower_components
+/node_modules
+/assets/scripts/bundle.js
