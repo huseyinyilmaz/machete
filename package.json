@@ -2,7 +2,9 @@
   "name": "machete",
   "description": "A url shortener.",
   "scripts": {
-    "watch": "watchify assets/scripts/machete.js -o assets/scripts/bundle.js"
+    "watch": "watchify assets/scripts/machete.js -o assets/scripts/bundle.js",
+    "build-js": "browserify assets/scripts/machete.js -o assets/scripts/bundle.js",
+    "build": "npm install && npm run build-js"
   },
   "repository": {
     "type": "git",

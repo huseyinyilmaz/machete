@@ -18,16 +18,16 @@ First of all, get the source code:
 
    $ git clone git://github.com/huseyinyilmaz/machete.git
 
-Then get front end dependencies with bower
+Then build frontend dependencies with npm
 
 ::
 
-   $ cd assets
-   $ bower install # first install bower if you don't have it.
+   $ npm run build
 
 If you want to start server without building the release.
 
 ::
+
     $ make deps
     $ make start
 
