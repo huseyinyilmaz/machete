@@ -26,4 +26,5 @@ erl_crash.dump
 publicator_test
 /rel/machete
 /node_modules
+/assets/bower
 /assets/scripts/bundle.js
