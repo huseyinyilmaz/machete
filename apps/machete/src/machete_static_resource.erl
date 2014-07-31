@@ -24,8 +24,7 @@
 
 init(ConfigProps) ->
     {root, Root} = proplists:lookup(root, ConfigProps),
-    %% {ok, #context{root=Root}}.
-    {{trace, "/tmp"}, #context{root=Root}}.
+    {ok, #context{root=Root}}.
 
 allowed_methods(ReqData, Context) ->
     {['HEAD', 'GET'], ReqData, Context}.

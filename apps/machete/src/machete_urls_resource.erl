@@ -9,8 +9,7 @@
 
 -spec init(list()) -> {ok, term()}.
 init([]) ->
-    {{trace, "/tmp"}, undefined}.
-    %% {ok, undefined}.
+    {ok, undefined}.
 
 allowed_methods(ReqData, Ctx) ->
     {['POST'], ReqData, Ctx}.
@@ -22,7 +21,7 @@ post_is_create(Request, Ctx) ->
 
 process_post(ReqData, Ctx) ->
     Url = machete_utils:normalize_url(wrq:req_body(ReqData)),
-    Code = machete_mnesia:insert_url(Url),
+    Code = machete_db:insert_url(Url),
     Response = mochijson2:encode([{<<"uri">>, << <<"/u/">>/binary, Code/binary>>}]),
     lager:debug("Response Data = ~p", [Response]),
     ReqData2 = wrq:set_resp_header("Content-Type", "application/json",
