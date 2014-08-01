@@ -88,7 +88,7 @@ def make_release():
             run('mv machete.tar.gz ../')
             gok()
 
-
+@task
 def replace_source():
     with cd(ROOT):
         with prefix(ENV_PREFIX):
@@ -131,20 +131,22 @@ def restore_mnesia():
 
 
 @task
-def backup_bower_components():
+def backup_frontend():
     with cd(DEPLOYMENT_DIR + '/assets'):
         gp('starting to backup bower components')
-        run('tar -czvf bower_components.tar.gz bower_components')
-        run('mv bower_components.tar.gz %s/' % ROOT)
+        run('tar -czvf bower.tar.gz bower')
+        run('mv bower.tar.gz %s/' % ROOT)
+        run('cp scripts/bundle.js %s/' % ROOT)
         gok()
 
 
 @task
-def restore_bower_components():
+def restore_frontend():
     with cd(DEPLOYMENT_DIR + '/assets'):
         rp('starting_to_restore_bower_components')
         run('mv %s/bower_components.tar.gz .' % ROOT)
         run('tar -xzvf bower_components.tar.gz')
+        run('cp %s/bundle.js scripts/' % ROOT)
         rok()
 
 
@@ -153,9 +155,9 @@ def deploy():
     start()
     make_release()
     backup_mnesia()
-    backup_bower_components()
+    backup_frontend()
     replace_source()
     start()
-    restore_bower_components()
+    restore_frontend()
     restore_mnesia()
     gp('Deoployment successfully completed')
