@@ -68,7 +68,7 @@ def backup_mnesia():
             run('bin/machete backup ' + full_file_name)
             gok()
             gp('Starting txt mnesia backup')
-            run('bin/machete backup_to_txt ' + full_file_name_txt)
+            run('bin/machete txt_backup ' + full_file_name_txt)
     # gzip text backup file
     with cd(BACKUP_DIR):
         with prefix(ENV_PREFIX):

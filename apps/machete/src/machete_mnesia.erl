@@ -2,23 +2,25 @@
 %%% @author Huseyin Yilmaz <huseyin@huseyins-air.home>
 %%% @copyright (C) 2014, Huseyin Yilmaz
 %%% @doc
-%%%
+%%% Module that holds code for initialization of mnesia database
 %%% @end
 %%% Created : 13 Jul 2014 by Huseyin Yilmaz <huseyin@huseyins-air.home>
 %%%-------------------------------------------------------------------
 -module(machete_mnesia).
 
 %% API
--export([init/0,
-         insert_url/1]).
+-export([create_schema/0,
+         create_from_backup/1,
+         backup/1,
+         create_from_txt_backup/1,
+         txt_backup/1,
+         check_schema/0,
+         add_client/1,
+         connect/1]).
 
--compile(export_all).
 
--record(url, {code::binary(),
-              url::binary()}).
+-include_lib("db.hrl").
 
--record(counter, {name::term(),
-                  value::integer()}).
 
 %%%===================================================================
 %%% API
@@ -26,35 +28,88 @@
 
 %%--------------------------------------------------------------------
 %% @doc
-%% Starts mnesia.
+%% Initializes an empty schema
 %% @end
 %%--------------------------------------------------------------------
+create_schema()->
+    init_schema(),
+    create_mnesia_tables(absent_tables()).
 
-init() ->
-    ok = ensure_mnesia_dir(),
-    ok = mnesia:start(),
-    ok = ensure_mnesia_running(),
-    ok = ensure_schema(),
-    lager:debug("Waiting for tables to initialize"),
-    ok = mnesia:wait_for_tables(names(), 30000),
-    lager:debug("Table initialization complete").
+%%--------------------------------------------------------------------
+%% @doc
+%% Initialize an empty schema and load data from backup file
+%% @end
+%%--------------------------------------------------------------------
+create_from_backup(File_name)->
+    init_schema(),
+    create_mnesia_tables(absent_tables()),
+    {atomic, _} = mnesia:restore(File_name, [{default_op, recreate_tables}]).
 
--spec insert_url(binary() | list()) -> binary().
-insert_url(Url) when is_list(Url) -> insert_url(list_to_binary(Url));
-insert_url(Url) ->
-    Code = get_url_code(),
-    mnesia:dirty_write(#url{code=Code, url=Url}),
-    Code.
-    %% mnesia:transaction(fun()-> mnesia:write(#url{code=get_url_code(), url=Url}) end).
+%%--------------------------------------------------------------------
+%% @doc
+%% Backup current database
+%% @end
+%%--------------------------------------------------------------------
+backup(File_name) ->
+    ok = mnesia:backup(File_name).
 
-get_url(Code) when is_list(Code) -> get_url(list_to_binary(Code));
-get_url(Code)->
-    case mnesia:dirty_read(url, Code) of
-        [#url{url=Url}] -> Url;
-        [] -> not_found
+%%--------------------------------------------------------------------
+%% @doc
+%% Initialize an empty schema and load data from text backup file
+%% @end
+%%--------------------------------------------------------------------
+create_from_txt_backup(File_name)->
+    init_schema(),
+    create_mnesia_tables(absent_tables()),
+    mnesia:load_textfile(File_name).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Backup current mnesia db to text file
+%% @end
+%%--------------------------------------------------------------------
+txt_backup(File_name)->
+    mnesia:dump_to_textfile(File_name).
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Check if schema has tables.
+%% @end
+%%--------------------------------------------------------------------
+check_schema() ->
+    case absent_tables() of
+        [] -> true;
+        _ -> false
     end.
 
 
+%% remove_client(Node)->
+%%     %% R1 = [{Name, mnesia:del_table_copy(Name, Node)} || {Name, _} <- types()],
+%%     R1 = 1,
+%%     R2 = rpc:call(Node, mnesia, stop,[]),
+%%     R3 = rpc:call(Node, mnesia, delete_schema, [[Node]]),
+%%     %% Remove node from cluster
+%%     R4 = mnesia:del_table_copy(schema, Node),
+%%     lager:debug("R1=~p R2=~p R3=~p R4=~p", [R1, R2, R3, R4]).
+
+
+add_client(Node) ->
+    R1 = mnesia:change_config(extra_db_nodes, [Node]),
+    % change schema table type so client can also store disc_copies.
+    R2 = mnesia:change_table_copy_type(schema, Node, disc_copies),
+    R3 = [{Name, mnesia:add_table_copy(Name, Node, Type)} || {Name, Type} <- types()],
+    lager:debug("add client results R1=~p, R2=~p, R3=~p", [R1, R2, R3]).
+
+%% It turns out that mnesia nodes are not removable
+%% disconnect(Node) ->
+%%     Result = rpc:call(Node, ?MODULE, remove_client, [node()]),
+%%     lager:debug("rpc call result = ~p", [Result]).
+
+connect(Node) ->
+    %% Add current node to claster as db node.
+    %% This will get schema from master to current node.
+    Result = rpc:call(Node, ?MODULE, add_client, [node()]),
+    lager:debug("rpc call result = ~p", [Result]).
 
 
 
@@ -71,21 +126,8 @@ stop()->
     lager:debug("stop mnesia."),
     mnesia:stop().
 
-ensure_schema() ->
-    case absent_tables() of
-        [] ->
-            lager:debug("schema integrity is ensured"),
-            ok;
-        _ ->
-            lager:warning("Schema is not complete. Creating new schema"),
-            create_schema(),
-            create_mnesia_tables(absent_tables()),
-            lager:info("Schema creation. complete."),
-            lager:debug("rechecking integrity"),
-            ensure_schema()
-    end.
-
-create_schema() ->
+%%% creates an empty
+init_schema() ->
     stop(),
     ensure_mnesia_not_running(),
     lager:debug("creating mnesia schema"),
@@ -105,7 +147,8 @@ create_mnesia_tables(Tables) ->
                                                  Tab, TabDef, Reason}})
                           end
                   end, Tables),
-    ok.
+    ok = mnesia:wait_for_tables(names(Tables), 30000).
+
 
 
 ensure_mnesia_running() ->
@@ -162,7 +205,31 @@ wait_for(Condition) ->
     lager:info("Waiting for ~p...", [Condition]),
     timer:sleep(1000).
 
-names() -> [Tab || {Tab, _} <- definitions()].
+
+names() -> names(definitions()).
+names(Tables) -> [Name || {Name, _} <- Tables].
+
+
+get_type(Attrs)->
+    get_type_by_name_list([Attr || {Attr, _} <- Attrs]).
+
+get_type_by_name_list(AttrNames) ->
+    Types = [disc_only_copies, disc_copies, ram_copies],
+    case lists:filter(fun(E) -> lists:member(E, Types) end,
+                      AttrNames) of
+        [] -> error("No type found");
+        [Type] -> Type;
+        _ -> error("Multiple types found")
+    end.
+
+
+
+
+
+
+-spec types()-> [{Name::atom(), Type::atom()}].
+types()->
+    [{Name, get_type(Properties)} || {Name, Properties} <- definitions()].
 
 definitions()->
     [{url,
@@ -174,15 +241,3 @@ definitions()->
        {attributes, record_info(fields, counter)},
        {disc_copies, [node()]}]}
     ].
-
-%%%%%%%%%%%%%%%%%%%%%%%
-%% Counter functions %%
-%%%%%%%%%%%%%%%%%%%%%%%
-get_url_code() ->
-    list_to_binary(string:to_lower(integer_to_list(bump(url), 36))).
-
-bump(Type) ->
-    bump(Type, 1).
-
-bump(Type, Inc) ->
-    mnesia:dirty_update_counter(counter, Type, Inc).

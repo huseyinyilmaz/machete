@@ -9,14 +9,26 @@
 -module(machete_console).
 
 %% API
--export([backup/1,
+-export([create_schema/1,
+         backup/1,
          restore/1,
-         backup_to_txt/1,
-         restore_from_txt/1]).
+         txt_backup/1,
+         restore_from_txt_backup/1,
+         connect/1]).
 
 %%%===================================================================
 %%% API
 %%%===================================================================
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Initializes an empty database
+%% @end
+%%--------------------------------------------------------------------
+
+create_schema([]) ->
+    lager:info("An empty mnesia db is being initialized."),
+    machete_mnesia:create_schema().
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -28,7 +40,7 @@ backup([]) -> backup(["machete_mnesia_backup.dub"]);
 backup([File_name]) ->
     lager:info("Mnasia db backup is being started. file_name=~p",
                [File_name]),
-    mnesia:backup(File_name),
+    machete_mnesia:backup(File_name),
     lager:info("Mnesia db backup is completed. file_name=~p",
               [File_name]),
     ok.
@@ -44,7 +56,7 @@ restore([]) -> restore(["machete_mnesia_backup.dub"]);
 restore([File_name]) ->
     lager:info("Mnasia db restore is being started. file_name=~p",
                [File_name]),
-    mnesia:restore(File_name, [{default_op, recreate_tables}]),
+    machete_mnesia:create_from_backup(File_name),
     lager:info("Mnesia db restore is completed. file_name=~p",
               [File_name]),
     ok.
@@ -55,12 +67,12 @@ restore([File_name]) ->
 %% Backups mnensia database to given file name in text format
 %% @end
 %%--------------------------------------------------------------------
--spec backup_to_txt([File_name::list()]|[]) -> ok.
-backup_to_txt([]) -> backup(["machete_mnesia_backup.txt"]);
-backup_to_txt([File_name]) ->
+-spec txt_backup([File_name::list()]|[]) -> ok.
+txt_backup([]) -> txt_backup(["machete_mnesia_backup.txt"]);
+txt_backup([File_name]) ->
     lager:info("Mnasia db backup is being started. file_name=~p",
                [File_name]),
-    mnesia:dump_to_textfile(File_name),
+    machete_mnesia:txt_backup(File_name),
     lager:info("Mnesia db backup is completed. file_name=~p",
               [File_name]),
     ok.
@@ -70,15 +82,31 @@ backup_to_txt([File_name]) ->
 %% Restores mnensia database from given file name in text format
 %% @end
 %%--------------------------------------------------------------------
--spec restore_from_txt([File_name::list()]|[]) -> ok.
-restore_from_txt([]) -> backup(["machete_mnesia_backup.txt"]);
-restore_from_txt([File_name]) ->
+-spec restore_from_txt_backup([File_name::list()]|[]) -> ok.
+restore_from_txt_backup([]) -> restore_from_txt_backup(["machete_mnesia_backup.txt"]);
+restore_from_txt_backup([File_name]) ->
     lager:info("Mnasia db restore is being started. file_name=~p",
                [File_name]),
-    mnesia:load_textfile(File_name),
+    machete_mnesia:create_from_txt_backup(File_name),
     lager:info("Mnesia db restore is completed. file_name=~p",
               [File_name]),
     ok.
+
+
+%%--------------------------------------------------------------------
+%% @doc
+%% Connects current node to mnesia cluster
+%% @end
+%%--------------------------------------------------------------------
+connect([Node_name]) when is_list(Node_name) ->
+    lager:info("Mnesia db is being connect to a new cluster ~p",
+               [Node_name]),
+    Node = list_to_atom(Node_name),
+    pong = net_adm:ping(Node),
+    machete_mnesia:connect(Node).
+
+
+
 
 
 %%%===================================================================
