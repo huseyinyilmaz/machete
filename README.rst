@@ -96,7 +96,7 @@ Than start other nodes and run
    $ bin/machete start
    $ bin/machete connect [machete_master_node_name@127.0.0.1]
 
-This will connect your current node to cluster. You can use any node in the cluster to connect. You do not really need to use the node that schema is created.
+This will connect your current node to cluster. You can use any node in the cluster to connect. You do not really need to use the node that schema is created on.
 
 Deploying release
 =================
