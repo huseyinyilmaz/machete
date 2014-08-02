@@ -42,6 +42,26 @@ You can build the release with this command
 
 This command will create machete.tar.gz file on project root.
 
+Configuration
+=============
+
+Before initializing the database, you might want to change default configuration. There is two configuration file that can be changed.
+
+[project_root]/releases/[release_number]/sys.conf
+-------------------------------------------------
+This configuration file has application specific files. From this file you can change:
+
+* IP and port settings
+* DB directory
+* LOG configuration
+
+[project_root]/releases/[release_number]/vm.args
+-------------------------------------------------
+This configuration file has virtual machine specific settings. From this file you can change:
+
+* Name of the machete node. (This is important if you want to run machete as cluster)
+* Set connection cookie. (All nodes in cluster has to have same cookie)
+* Set maximum number of concurrent ports/sockets.
 
 Deploying release
 =================
