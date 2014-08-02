@@ -69,6 +69,7 @@ Setting up database
 If you want to run machete as a single node. Run
 
 ::
+
    $ bin/machete create_schema
 
 This will create database schema on project root. If you need to change the place that schema is created use sys.conf configuration file as described above.
@@ -79,16 +80,19 @@ Setting up a cluster
 First of all make sure that all nodes in the cluster has their own node name (vm.args file). Than start one of the nodes with
 
 ::
+
    $ bin/machete start
 
 After that create schema on that node:
 
 ::
+
    $ bin/machete create_schema
 
 Than start other nodes and run
 
 ::
+
    $ bin/machete start
    $ bin/machete connect [machete_master_node_name@127.0.0.1]
 
