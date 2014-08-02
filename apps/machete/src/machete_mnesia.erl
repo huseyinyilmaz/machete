@@ -32,6 +32,7 @@
 %% @end
 %%--------------------------------------------------------------------
 create_schema()->
+    ensure_mnesia_dir(),
     init_schema(),
     create_mnesia_tables(absent_tables()).
 
@@ -41,6 +42,7 @@ create_schema()->
 %% @end
 %%--------------------------------------------------------------------
 create_from_backup(File_name)->
+    ensure_mnesia_dir(),
     init_schema(),
     create_mnesia_tables(absent_tables()),
     {atomic, _} = mnesia:restore(File_name, [{default_op, recreate_tables}]).
@@ -59,6 +61,7 @@ backup(File_name) ->
 %% @end
 %%--------------------------------------------------------------------
 create_from_txt_backup(File_name)->
+    ensure_mnesia_dir(),
     init_schema(),
     create_mnesia_tables(absent_tables()),
     mnesia:load_textfile(File_name).
@@ -182,11 +185,14 @@ ensure_mnesia_dir() ->
             ok
     end.
 
+-spec dir() -> list().
 dir() -> mnesia:system_info(directory).
 
+-spec table_list() -> table_name().
 table_list()->
     lists:sort(lists:delete(schema, mnesia:system_info(tables))).
 
+-spec absent_tables() -> [table_definition()].
 absent_tables()->
     Table_list = table_list(),
     lists:foldl(fun({Table_name, _}=Item, Sum)->
@@ -205,14 +211,14 @@ wait_for(Condition) ->
     lager:info("Waiting for ~p...", [Condition]),
     timer:sleep(1000).
 
-
-names() -> names(definitions()).
+-spec names(Tables::[table_definition()]) -> table_name().
 names(Tables) -> [Name || {Name, _} <- Tables].
 
-
+-spec get_type(proplists:property()) -> table_types().
 get_type(Attrs)->
     get_type_by_name_list([Attr || {Attr, _} <- Attrs]).
 
+-spec get_type_by_name_list(AttrNames::[atom()]) -> table_types().
 get_type_by_name_list(AttrNames) ->
     Types = [disc_only_copies, disc_copies, ram_copies],
     case lists:filter(fun(E) -> lists:member(E, Types) end,
@@ -222,15 +228,11 @@ get_type_by_name_list(AttrNames) ->
         _ -> error("Multiple types found")
     end.
 
-
-
-
-
-
--spec types()-> [{Name::atom(), Type::atom()}].
+-spec types()-> [table_definition()].
 types()->
     [{Name, get_type(Properties)} || {Name, Properties} <- definitions()].
 
+-spec definitions() -> [].
 definitions()->
     [{url,
       [{record_name, url},

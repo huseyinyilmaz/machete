@@ -87,3 +87,18 @@ release: clean deps compile
 	rm -rf rel/machete
 	mv rel/machete.tar.gz .
 	echo "machete.tar.gz is created in current directory."
+
+build-static-plt:
+	@$(DIALYZER) --build_plt --output_plt .erlang_dialyzer.plt \
+		--apps erts kernel stdlib ssl crypto mnesia eunit tools os_mon runtime_tools xmerl inets deps/*
+
+build-plt: compile
+	@$(DIALYZER) --build_plt --output_plt .dialyzer.plt \
+		--apps erts kernel stdlib ssl crypto \
+                       mnesia eunit tools os_mon runtime_tools \
+                       xmerl inets public_key webtool deps/*
+
+dialyze:
+	@$(DIALYZER) --apps apps/* --plt .dialyzer.plt\
+		-Werror_handling \
+		-Wrace_conditions -Wunmatched_returns

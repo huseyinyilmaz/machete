@@ -32,7 +32,7 @@ insert_url(Url) ->
     Code.
     %% mnesia:transaction(fun()-> mnesia:write(#url{code=get_url_code(), url=Url}) end).
 
--spec get_url(Code::binary()| list()) -> binary().
+-spec get_url(Code::binary()| list()) -> binary() | not_found.
 get_url(Code) when is_list(Code) -> get_url(list_to_binary(Code));
 get_url(Code)->
     case mnesia:dirty_read(url, Code) of

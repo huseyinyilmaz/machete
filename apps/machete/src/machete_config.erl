@@ -5,7 +5,6 @@
     web_config/0
 ]).
 
--spec dispatch() -> [webmachine_dispatcher:route()].
 dispatch() ->
     lists:flatten([
         {["u"], machete_urls_resource, []},
