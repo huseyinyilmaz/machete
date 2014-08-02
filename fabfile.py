@@ -144,8 +144,8 @@ def backup_frontend():
 def restore_frontend():
     with cd(DEPLOYMENT_DIR + '/assets'):
         rp('starting_to_restore_bower_components')
-        run('mv %s/bower_components.tar.gz .' % ROOT)
-        run('tar -xzvf bower_components.tar.gz')
+        run('cp %s/bower.tar.gz .' % ROOT)
+        run('tar -xzvf bower.tar.gz')
         run('cp %s/bundle.js scripts/' % ROOT)
         rok()
 
